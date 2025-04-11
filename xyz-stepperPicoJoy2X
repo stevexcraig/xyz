@@ -1,0 +1,95 @@
+const int dirPin = 8;       // Direction pin for DRV8825
+const int stepPin = 9;      // Step pin for DRV8825
+const int joystickX = 26;   // Analog pin for joystick X-axis (using GPIO 26)
+const int stepsPerRevolution = 200;
+
+const int dirPin2 = 6;       // Direction pin for DRV8825
+const int stepPin2 = 7;      // Step pin for DRV8825
+const int joystickY = 27;   // Analog pin for joystick X-axis (using GPIO 26)
+
+
+
+// Constants for joystick control
+const int joystickMiddle = 510;  // Middle value for Pico ADC (0-4095 range)
+const int joystickDeadzone = 75; // Ignore small movements around center
+const int maxSpeed = 1200;        // Fastest step time (microseconds)
+const int minSpeed = 200;       // Slowest step time (microseconds)
+
+const int joystickMiddle2 = 510;  // Middle value for Pico ADC (0-4095 range)
+const int joystickDeadzone2 = 75; // Ignore small movements around center
+const int maxSpeed2 = 1200;        // Fastest step time (microseconds)
+const int minSpeed2 = 200;       // Slowest step time (microseconds)
+
+
+void setup() {
+  // Declare pins as outputs
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+  pinMode(stepPin2, OUTPUT);
+  pinMode(dirPin2, OUTPUT);
+  
+  // Initialize serial for debugging
+  Serial.begin(115200);
+}
+
+void loop() {
+  // Read joystick position
+  int joystickValue = analogRead(joystickX);
+  
+  // Print joystick value for debugging
+  Serial.println(joystickValue);
+  
+  // Only move if joystick is outside the deadzone
+  if (abs(joystickValue - joystickMiddle) > joystickDeadzone) {
+    
+    // Determine direction based on joystick position
+    if (joystickValue > joystickMiddle) {
+      digitalWrite(dirPin, HIGH);  // One direction
+    } else {
+      digitalWrite(dirPin, LOW);   // Other direction
+    }
+    
+    // Calculate speed based on how far joystick is moved from center
+    // Further from center = faster movement
+    int joystickOffset = abs(joystickValue - joystickMiddle);
+    int stepDelay = map(joystickOffset, joystickDeadzone, 2023, minSpeed, maxSpeed);
+    
+    // Take a single step at the calculated speed
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(stepDelay);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(stepDelay);
+  }
+
+// Read joystick position
+  int joystickValue2 = analogRead(joystickY);
+  
+  // Print joystick value for debugging
+  Serial.println(joystickValue2);
+  
+  // Only move if joystick is outside the deadzone
+  if (abs(joystickValue2 - joystickMiddle2) > joystickDeadzone2) {
+    
+    // Determine direction based on joystick position
+    if (joystickValue2 > joystickMiddle2) {
+      digitalWrite(dirPin2, HIGH);  // One direction
+    } else {
+      digitalWrite(dirPin2, LOW);   // Other direction
+    }
+    
+    // Calculate speed based on how far joystick is moved from center
+    // Further from center = faster movement
+    int joystickOffset2 = abs(joystickValue2 - joystickMiddle2);
+    int stepDelay2 = map(joystickOffset2, joystickDeadzone2, 2048, minSpeed2, maxSpeed2);
+    
+    // Take a single step at the calculated speed
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(stepDelay2);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(stepDelay2);
+  }
+
+  
+  // Small delay to prevent the loop from running too fast
+  delayMicroseconds(500);
+}
